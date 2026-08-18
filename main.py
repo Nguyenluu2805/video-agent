@@ -1,5 +1,8 @@
 import time
 import sys
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import os
 sys.stdout.reconfigure(encoding='utf-8')
 
 from sheet_manager import SheetManager
@@ -9,6 +12,18 @@ from ai_agent import analyze_video_content
 # Tên file Google Sheets bạn muốn kết nối (phải được share quyền với Service Account)
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1gwl8-0ppnQwouHA9F6CylzTPSLKo072FIvGLC1QaCWo/edit?gid=0#gid=0"
 CREDENTIALS_PATH = "credentials.json"
+
+class DummyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        self.wfile.write(b"Robot is running 24/7!")
+
+def run_dummy_server():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(('0.0.0.0', port), DummyHandler)
+    server.serve_forever()
 
 def process_all_videos():
     try:
@@ -51,6 +66,10 @@ def process_all_videos():
         time.sleep(5)
 
 def main():
+    # Bật server ảo luồng phụ để Render Web Service không bị báo lỗi cổng
+    server_thread = threading.Thread(target=run_dummy_server, daemon=True)
+    server_thread.start()
+    
     check_interval = 300 # 5 phút
     
     print("🤖 Robot tự động chấm điểm đã khởi động! Sẵn sàng trực 24/7.")
