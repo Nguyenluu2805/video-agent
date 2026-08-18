@@ -51,10 +51,10 @@ def process_video(url):
         raise RuntimeError("Vui lòng nhập link file trực tiếp, không sử dụng link thư mục (Folder).")
         
     print("▶️ Đang tải dữ liệu bằng yt-dlp...")
-    temp_filename = f"temp_video_{uuid.uuid4().hex[:8]}.mp4"
+    temp_base = f"temp_video_{uuid.uuid4().hex[:8]}"
     ydl_opts = {
         'format': 'bestaudio[ext=m4a]/bestaudio/best[height<=480]/worst', # Ưu tiên tải Audio cho nhẹ và nhanh
-        'outtmpl': temp_filename,
+        'outtmpl': f"{temp_base}.%(ext)s",
         'quiet': True,
         'no_warnings': True
     }
@@ -64,7 +64,10 @@ def process_video(url):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
             ydl.download([url])
-            if os.path.exists(temp_filename):
+            import glob
+            downloaded_files = glob.glob(f"{temp_base}.*")
+            if downloaded_files:
+                temp_filename = downloaded_files[0]
                 print(f"✅ Đã tải xong Audio/Video: {temp_filename}")
                 return {'type': 'audio', 'path': temp_filename}
             else:
