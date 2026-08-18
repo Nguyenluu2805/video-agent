@@ -44,30 +44,30 @@ def process_video(url):
             print(f"✅ Đã trích xuất được {len(full_text)} ký tự văn bản từ phụ đề YouTube.")
             return {'type': 'text', 'content': full_text}
         except Exception as e:
-            print(f"⚠️ Video YouTube không có phụ đề hoặc bị lỗi lấy phụ đề: {str(e)}")
-            raise RuntimeError(f"Không thể lấy phụ đề từ YouTube. Bạn có thể cần bổ sung tính năng tải luồng nếu thực sự video không có phụ đề.")
-    else:
-        if '/folders/' in url:
-            raise RuntimeError("Vui lòng nhập link file video trực tiếp, không sử dụng link thư mục (Folder).")
+            print(f"⚠️ Không có phụ đề hoặc bị lỗi lấy phụ đề. Chuyển sang tải audio/video trực tiếp...")
+            # Sẽ chạy tiếp đoạn code yt-dlp bên dưới
             
-        print("▶️ Link không phải YouTube (Drive). Dùng yt-dlp tải...")
-        temp_filename = f"temp_video_{uuid.uuid4().hex[:8]}.mp4"
-        ydl_opts = {
-            'format': 'best[height<=480]/worst',
-            'outtmpl': temp_filename,
-            'quiet': True,
-            'no_warnings': True
-        }
-        if os.path.exists('cookies.txt'):
-            ydl_opts['cookiefile'] = 'cookies.txt'
-            
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            try:
-                ydl.download([url])
-                if os.path.exists(temp_filename):
-                    print(f"✅ Đã tải xong Audio/Video: {temp_filename}")
-                    return {'type': 'audio', 'path': temp_filename}
-                else:
-                    raise RuntimeError("yt_dlp chạy xong nhưng không thấy file.")
-            except Exception as e:
-                raise RuntimeError(f"Lỗi khi tải Drive: {str(e)}")
+    if '/folders/' in url:
+        raise RuntimeError("Vui lòng nhập link file trực tiếp, không sử dụng link thư mục (Folder).")
+        
+    print("▶️ Đang tải dữ liệu bằng yt-dlp...")
+    temp_filename = f"temp_video_{uuid.uuid4().hex[:8]}.mp4"
+    ydl_opts = {
+        'format': 'bestaudio[ext=m4a]/bestaudio/best[height<=480]/worst', # Ưu tiên tải Audio cho nhẹ và nhanh
+        'outtmpl': temp_filename,
+        'quiet': True,
+        'no_warnings': True
+    }
+    if os.path.exists('cookies.txt'):
+        ydl_opts['cookiefile'] = 'cookies.txt'
+        
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
+            ydl.download([url])
+            if os.path.exists(temp_filename):
+                print(f"✅ Đã tải xong Audio/Video: {temp_filename}")
+                return {'type': 'audio', 'path': temp_filename}
+            else:
+                raise RuntimeError("yt_dlp chạy xong nhưng không thấy file.")
+        except Exception as e:
+            raise RuntimeError(f"Lỗi khi tải Drive/YouTube: {str(e)}")
