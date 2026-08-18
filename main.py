@@ -67,11 +67,19 @@ def process_all_videos():
 
 def main():
     # Khôi phục file cookies.txt từ biến môi trường (nếu có) để vượt qua bộ lọc bot của YouTube
+    import base64
     youtube_cookies = os.environ.get("YOUTUBE_COOKIES")
     if youtube_cookies:
-        with open("cookies.txt", "w", encoding="utf-8") as f:
-            f.write(youtube_cookies)
-            
+        try:
+            # Thử giải mã base64
+            decoded_cookies = base64.b64decode(youtube_cookies).decode('utf-8')
+            with open("cookies.txt", "w", encoding="utf-8") as f:
+                f.write(decoded_cookies)
+        except Exception:
+            # Nếu không phải base64 thì ghi trực tiếp
+            with open("cookies.txt", "w", encoding="utf-8") as f:
+                f.write(youtube_cookies)
+                
     # Bật server ảo luồng phụ để Render Web Service không bị báo lỗi cổng
     server_thread = threading.Thread(target=run_dummy_server, daemon=True)
     server_thread.start()
