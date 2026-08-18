@@ -1,0 +1,6 @@
+.env
+credentials.json
+cookies.txt
+__pycache__/
+*.mp4
+temp_video_*
