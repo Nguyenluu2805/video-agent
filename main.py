@@ -66,6 +66,12 @@ def process_all_videos():
         time.sleep(5)
 
 def main():
+    # Khôi phục file cookies.txt từ biến môi trường (nếu có) để vượt qua bộ lọc bot của YouTube
+    youtube_cookies = os.environ.get("YOUTUBE_COOKIES")
+    if youtube_cookies:
+        with open("cookies.txt", "w", encoding="utf-8") as f:
+            f.write(youtube_cookies)
+            
     # Bật server ảo luồng phụ để Render Web Service không bị báo lỗi cổng
     server_thread = threading.Thread(target=run_dummy_server, daemon=True)
     server_thread.start()
